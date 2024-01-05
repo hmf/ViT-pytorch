@@ -2,6 +2,10 @@
 
 # update system
 sudo apt-get update
+# https://askubuntu.com/questions/99774/exclude-packages-from-apt-get-upgrade
+# https://help.ubuntu.com/community/PinningHowto
+# https://linuxopsys.com/topics/exclude-specific-package-apt-upgrade
+sudo apt-mark hold cuda-toolkit libcudnn8-dev libcudnn8
 sudo apt-get upgrade -y
 
 # Para executar o GUI
@@ -15,7 +19,11 @@ sudo apt-get upgrade -y
 # sudo apt-get install libcairo2-dev
 sudo apt-get install -y libcairo2-dev pkg-config python3-dev
 
-sudo apt install -y nodejs
+# https://nodejs.org/en/download/package-manager#debian-and-ubuntu-based-linux-distributions
+# https://github.com/nodesource/distributions
+# sudo apt install -y nodejs
+curl -fsSL https://deb.nodesource.com/setup_current.x | sudo -E bash - &&\
+sudo apt-get install -y nodejs
 
 # Why version 12, when TF requires Cuda 11.8? 
 # Could not load library libcublasLt.so.12. Error: libcublasLt.so.12: cannot open shared object file: No such file or directory
