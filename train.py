@@ -14,8 +14,12 @@ import torch.distributed as dist
 
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
-from apex import amp
-from apex.parallel import DistributedDataParallel as DDP
+# https://discuss.pytorch.org/t/torch-cuda-amp-vs-nvidia-apex/74994
+# https://pytorch.org/docs/master/amp.html
+# from apex import amp
+import torch.cuda.amp as amp
+# from apex.parallel import DistributedDataParallel as DDP
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 from models.modeling import VisionTransformer, CONFIGS
 from utils.scheduler import WarmupLinearSchedule, WarmupCosineSchedule

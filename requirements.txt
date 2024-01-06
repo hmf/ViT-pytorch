@@ -1,5 +1,7 @@
 packaging
+scipy
 torch
+torchvision
 numpy
 tqdm
 tensorboard

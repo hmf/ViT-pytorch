@@ -178,3 +178,50 @@ ModuleNotFoundError: No module named 'packaging'
 
 https://stackoverflow.com/questions/42222096/no-module-named-packaging
 https://blog.finxter.com/fixed-modulenotfounderror-no-module-named-packaging/
+
+
+vscode ➜ /workspaces/ViT-pytorch (dev_container) $ python3 train.py --name cifar10-100_500 --dataset cifar10 --model_type ViT-B_16 --pretrained_dir checkpoint/ViT-B_16.npz
+Traceback (most recent call last):
+  File "/workspaces/ViT-pytorch/train.py", line 22, in <module>
+    from models.modeling import VisionTransformer, CONFIGS
+  File "/workspaces/ViT-pytorch/models/modeling.py", line 18, in <module>
+    from scipy import ndimage
+ModuleNotFoundError: No module named 'scipy'
+
+vscode ➜ /workspaces/ViT-pytorch (dev_container) $ python3 train.py --name cifar10-100_500 --dataset cifar10 --model_type ViT-B_16 --pretrained_dir checkpoint/ViT-B_16.npz
+Traceback (most recent call last):
+  File "/workspaces/ViT-pytorch/train.py", line 13, in <module>
+    import torch.distributed as dist
+ModuleNotFoundError: No module named 'torch.distributed'
+
+Restart the dev container
+
+
+
+vscode ➜ /workspaces/ViT-pytorch (dev_container) $ python3 train.py --name cifar10-100_500 --dataset cifar10 --model_type ViT-B_16 --pretrained_dir checkpoint/ViT-B_16.npz
+Traceback (most recent call last):
+  File "/workspaces/ViT-pytorch/train.py", line 26, in <module>
+    from utils.data_utils import get_loader
+  File "/workspaces/ViT-pytorch/utils/data_utils.py", line 5, in <module>
+    from torchvision import transforms, datasets
+ModuleNotFoundError: No module named 'torchvision'
+
+
+
+vscode ➜ /workspaces/ViT-pytorch (dev_container) $ python3 train.py --name cifar10-100_500 --dataset cifar10 --model_type ViT-B_16 --pretrained_dir checkpoint/ViT-B_16.npz
+Traceback (most recent call last):
+  File "/workspaces/ViT-pytorch/train.py", line 17, in <module>
+    from apex import amp
+ModuleNotFoundError: No module named 'apex'
+
+https://github.com/NVIDIA/apex/issues/1724
+https://github.com/NVIDIA/apex/issues/1722
+https://discuss.pytorch.org/t/how-to-replace-apex-amp-by-pytorch-amp/182087
+https://pytorch.org/docs/stable/notes/amp_examples.html#amp-examples
+https://pytorch.org/tutorials/intermediate/ddp_tutorial.html
+
+https://discuss.pytorch.org/t/torch-cuda-amp-vs-nvidia-apex/74994
+# https://pytorch.org/docs/stable/notes/amp_examples.html
+# https://pytorch.org/tutorials/recipes/recipes/amp_recipe.html
+# https://pytorch.org/docs/stable/amp.html
+https://pytorch.org/docs/master/amp.html
