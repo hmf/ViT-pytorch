@@ -363,3 +363,176 @@ vscode ➜ /workspaces/ViT-pytorch (dev_container) $ free -h --si
 Mem:            112G        5.0G         66G        4.0M         40G        106G
 Swap:             0B          0B          0B
 
+
+vscode ➜ /workspaces/ViT-pytorch (dev_container) $ python3 train.py --name cifar10-100_500 --dataset cifar10 --model_type ViT-B_16 --pretrained_dir checkpoint/ViT-B_16.npz
+01/06/2024 13:33:01 - WARNING - __main__ - Process rank: -1, device: cuda, n_gpu: 1, distributed training: False, 16-bits training: False
+01/06/2024 13:33:03 - INFO - __main__ - classifier: token
+hidden_size: 768
+patches:
+  size: !!python/tuple
+  - 16
+  - 16
+representation_size: null
+transformer:
+  attention_dropout_rate: 0.0
+  dropout_rate: 0.1
+  mlp_dim: 3072
+  num_heads: 12
+  num_layers: 12
+
+01/06/2024 13:33:03 - INFO - __main__ - Training parameters Namespace(name='cifar10-100_500', dataset='cifar10', model_type='ViT-B_16', pretrained_dir='checkpoint/ViT-B_16.npz', output_dir='output', img_size=224, train_batch_size=512, eval_batch_size=64, eval_every=100, learning_rate=0.03, weight_decay=0, num_steps=10000, decay_type='cosine', warmup_steps=500, max_grad_norm=1.0, local_rank=-1, seed=42, gradient_accumulation_steps=1, fp16=False, fp16_opt_level='O2', loss_scale=0, n_gpu=1, device=device(type='cuda'))
+01/06/2024 13:33:03 - INFO - __main__ - Total Parameter:        85.8M
+85.806346
+Files already downloaded and verified
+Files already downloaded and verified
+01/06/2024 13:33:04 - INFO - __main__ - ***** Running training *****
+01/06/2024 13:33:04 - INFO - __main__ -   Total optimization steps = 10000
+01/06/2024 13:33:04 - INFO - __main__ -   Instantaneous batch size per GPU = 512
+01/06/2024 13:33:04 - INFO - __main__ -   Total train batch size (w. parallel, distributed & accumulation) = 512
+01/06/2024 13:33:04 - INFO - __main__ -   Gradient Accumulation steps = 1
+Training (X / X Steps) (loss=X.X):   0%|| 0/98 [00:02<?, ?it/s]
+Traceback (most recent call last):
+  File "/workspaces/ViT-pytorch/train.py", line 332, in <module>
+    main()
+  File "/workspaces/ViT-pytorch/train.py", line 328, in main
+    train(args, model)
+  File "/workspaces/ViT-pytorch/train.py", line 200, in train
+    loss = model(x, y)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/workspaces/ViT-pytorch/models/modeling.py", line 273, in forward
+    x, attn_weights = self.transformer(x)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/workspaces/ViT-pytorch/models/modeling.py", line 258, in forward
+    encoded, attn_weights = self.encoder(embedding_output)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/workspaces/ViT-pytorch/models/modeling.py", line 243, in forward
+    hidden_states, weights = layer_block(hidden_states)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/workspaces/ViT-pytorch/models/modeling.py", line 188, in forward
+    x = self.ffn(x)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/workspaces/ViT-pytorch/models/modeling.py", line 116, in forward
+    x = self.fc1(x)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 114, in forward
+    return F.linear(input, self.weight, self.bias)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 1.15 GiB. GPU 0 has a total capacty of 23.69 GiB of which 912.81 MiB is free. Process 454738 has 22.79 GiB memory in use. Of the allocated memory 21.50 GiB is allocated by PyTorch, and 1001.89 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+
+python3 train.py --name cifar10-100_500 --dataset cifar10 --model_type ViT-B_16 --pretrained_dir checkpoint/ViT-B_16.npz --gradient_accumulation_steps 2
+
+vscode ➜ /workspaces/ViT-pytorch (dev_container) $ python3 train.py --name cifar10-100_500 --dataset cifar10 --model_type ViT-B_16 --pretrained_dir checkpoint/ViT-B_16.npz --fp16 --fp16_opt_level O2
+01/06/2024 13:37:18 - WARNING - __main__ - Process rank: -1, device: cuda, n_gpu: 1, distributed training: False, 16-bits training: True
+01/06/2024 13:37:19 - INFO - __main__ - classifier: token
+hidden_size: 768
+patches:
+  size: !!python/tuple
+  - 16
+  - 16
+representation_size: null
+transformer:
+  attention_dropout_rate: 0.0
+  dropout_rate: 0.1
+  mlp_dim: 3072
+  num_heads: 12
+  num_layers: 12
+
+01/06/2024 13:37:19 - INFO - __main__ - Training parameters Namespace(name='cifar10-100_500', dataset='cifar10', model_type='ViT-B_16', pretrained_dir='checkpoint/ViT-B_16.npz', output_dir='output', img_size=224, train_batch_size=512, eval_batch_size=64, eval_every=100, learning_rate=0.03, weight_decay=0, num_steps=10000, decay_type='cosine', warmup_steps=500, max_grad_norm=1.0, local_rank=-1, seed=42, gradient_accumulation_steps=1, fp16=True, fp16_opt_level='O2', loss_scale=0, n_gpu=1, device=device(type='cuda'))
+01/06/2024 13:37:19 - INFO - __main__ - Total Parameter:        85.8M
+85.806346
+Files already downloaded and verified
+Files already downloaded and verified
+Traceback (most recent call last):
+  File "/workspaces/ViT-pytorch/train.py", line 332, in <module>
+    main()
+  File "/workspaces/ViT-pytorch/train.py", line 328, in main
+    train(args, model)
+  File "/workspaces/ViT-pytorch/train.py", line 168, in train
+    model, optimizer = amp.initialize(models=model,
+AttributeError: module 'torch.cuda.amp' has no attribute 'initialize'
+vscode ➜ /workspaces/ViT-pytorch (dev_container) $ python3 train.py --name cifar10-100_500 --dataset cifar10 --model_type ViT-B_16 --pretrained_dir checkpoint/ViT-B_16.npz --gradient_accumulation_steps 2
+01/06/2024 13:44:49 - WARNING - __main__ - Process rank: -1, device: cuda, n_gpu: 1, distributed training: False, 16-bits training: False
+01/06/2024 13:44:51 - INFO - __main__ - classifier: token
+hidden_size: 768
+patches:
+  size: !!python/tuple
+  - 16
+  - 16
+representation_size: null
+transformer:
+  attention_dropout_rate: 0.0
+  dropout_rate: 0.1
+  mlp_dim: 3072
+  num_heads: 12
+  num_layers: 12
+
+01/06/2024 13:44:51 - INFO - __main__ - Training parameters Namespace(name='cifar10-100_500', dataset='cifar10', model_type='ViT-B_16', pretrained_dir='checkpoint/ViT-B_16.npz', output_dir='output', img_size=224, train_batch_size=512, eval_batch_size=64, eval_every=100, learning_rate=0.03, weight_decay=0, num_steps=10000, decay_type='cosine', warmup_steps=500, max_grad_norm=1.0, local_rank=-1, seed=42, gradient_accumulation_steps=2, fp16=False, fp16_opt_level='O2', loss_scale=0, n_gpu=1, device=device(type='cuda'))
+01/06/2024 13:44:51 - INFO - __main__ - Total Parameter:        85.8M
+85.806346
+Files already downloaded and verified
+Files already downloaded and verified
+01/06/2024 13:44:52 - INFO - __main__ - ***** Running training *****
+01/06/2024 13:44:52 - INFO - __main__ -   Total optimization steps = 10000
+01/06/2024 13:44:52 - INFO - __main__ -   Instantaneous batch size per GPU = 256
+01/06/2024 13:44:52 - INFO - __main__ -   Total train batch size (w. parallel, distributed & accumulation) = 512
+01/06/2024 13:44:52 - INFO - __main__ -   Gradient Accumulation steps = 2
+Training (X / X Steps) (loss=X.X):   0%|| 0/196 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "/workspaces/ViT-pytorch/train.py", line 332, in <module>
+    main()
+  File "/workspaces/ViT-pytorch/train.py", line 328, in main
+    train(args, model)
+  File "/workspaces/ViT-pytorch/train.py", line 200, in train
+    loss = model(x, y)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/workspaces/ViT-pytorch/models/modeling.py", line 273, in forward
+    x, attn_weights = self.transformer(x)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/workspaces/ViT-pytorch/models/modeling.py", line 258, in forward
+    encoded, attn_weights = self.encoder(embedding_output)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/workspaces/ViT-pytorch/models/modeling.py", line 243, in forward
+    hidden_states, weights = layer_block(hidden_states)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/workspaces/ViT-pytorch/models/modeling.py", line 183, in forward
+    x, weights = self.attn(x)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/vscode/.local/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/workspaces/ViT-pytorch/models/modeling.py", line 90, in forward
+    context_layer = torch.matmul(attention_probs, value_layer)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 148.00 MiB. GPU 0 has a total capacty of 23.69 GiB of which 76.81 MiB is free. Process 457819 has 23.60 GiB memory in use. Of the allocated memory 23.11 GiB is allocated by PyTorch, and 184.89 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+vscode ➜ /workspaces/ViT-pytorch (dev_container) $ 
+
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 1.15 GiB. GPU 0 has a total capacty of 23.69 GiB of which 912.81 MiB is free. Process 454738 has 22.79 GiB memory in use. Of the allocated memory 21.50 GiB is allocated by PyTorch, and 1001.89 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+
