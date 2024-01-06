@@ -536,3 +536,33 @@ vscode ➜ /workspaces/ViT-pytorch (dev_container) $
 
 torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 1.15 GiB. GPU 0 has a total capacty of 23.69 GiB of which 912.81 MiB is free. Process 454738 has 22.79 GiB memory in use. Of the allocated memory 21.50 GiB is allocated by PyTorch, and 1001.89 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
 
+vscode ➜ /workspaces/ViT-pytorch (dev_container) $ python3 train.py --name cifar10-100_500 --dataset cifar10 --model_type ViT-B_16 --pretrained_dir checkpoint/ViT-B_16.npz --fp16 --fp16_opt_level O2
+01/06/2024 13:56:17 - WARNING - __main__ - Process rank: -1, device: cuda, n_gpu: 1, distributed training: False, 16-bits training: True
+01/06/2024 13:56:19 - INFO - __main__ - classifier: token
+hidden_size: 768
+patches:
+  size: !!python/tuple
+  - 16
+  - 16
+representation_size: null
+transformer:
+  attention_dropout_rate: 0.0
+  dropout_rate: 0.1
+  mlp_dim: 3072
+  num_heads: 12
+  num_layers: 12
+
+01/06/2024 13:56:19 - INFO - __main__ - Training parameters Namespace(name='cifar10-100_500', dataset='cifar10', model_type='ViT-B_16', pretrained_dir='checkpoint/ViT-B_16.npz', output_dir='output', img_size=224, train_batch_size=512, eval_batch_size=64, eval_every=100, learning_rate=0.03, weight_decay=0, num_steps=10000, decay_type='cosine', warmup_steps=500, max_grad_norm=1.0, local_rank=-1, seed=42, gradient_accumulation_steps=1, fp16=True, fp16_opt_level='O2', loss_scale=0, n_gpu=1, device=device(type='cuda'))
+01/06/2024 13:56:19 - INFO - __main__ - Total Parameter:        85.8M
+85.806346
+Files already downloaded and verified
+Files already downloaded and verified
+Traceback (most recent call last):
+  File "/workspaces/ViT-pytorch/train.py", line 332, in <module>
+    main()
+  File "/workspaces/ViT-pytorch/train.py", line 328, in main
+    train(args, model)
+  File "/workspaces/ViT-pytorch/train.py", line 168, in train
+    model, optimizer = amp.initialize(models=model,
+AttributeError: module 'torch.cuda.amp' has no attribute 'initialize'
+vscode ➜ /workspaces/ViT-pytorch (dev_container) $ 
