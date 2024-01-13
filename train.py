@@ -26,6 +26,7 @@ from utils.scheduler import WarmupLinearSchedule, WarmupCosineSchedule
 from utils.data_utils import get_loader
 from utils.dist_util import get_world_size
 
+import mem
 
 logger = logging.getLogger(__name__)
 
@@ -68,18 +69,14 @@ def setup(args):
     model = VisionTransformer(config, args.img_size, zero_head=True, num_classes=num_classes)
     model.load_from(np.load(args.pretrained_dir))
     model.to(args.device)
-    num_params = count_parameters(model)
+    num_params = mem.count_parameters(model)
 
     logger.info("{}".format(config))
     logger.info("Training parameters %s", args)
     logger.info("Total Parameter: \t%2.1fM" % num_params)
-    print(num_params)
+    mem.num_params_of(logger, model)
+
     return args, model
-
-
-def count_parameters(model):
-    params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    return params/1000000
 
 
 def set_seed(args):
@@ -150,8 +147,10 @@ def train(args, model):
 
     args.train_batch_size = args.train_batch_size // args.gradient_accumulation_steps
 
+    mem.mem_usage(logger, "At start")
     # Prepare dataset
     train_loader, test_loader = get_loader(args)
+    mem.mem_usage(logger, "Data loaded")
 
     # Prepare optimizer and scheduler
     optimizer = torch.optim.SGD(model.parameters(),
@@ -164,11 +163,16 @@ def train(args, model):
     else:
         scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=t_total)
 
+    use_amp=False
     if args.fp16:
-        model, optimizer = amp.initialize(models=model,
-                                          optimizers=optimizer,
-                                          opt_level=args.fp16_opt_level)
-        amp._amp_state.loss_scalers[0]._loss_scale = 2**20
+        # https://discuss.pytorch.org/t/torch-cuda-amp-equivalent-of-apex-amp-initialize/132598/5
+        # https://pytorch.org/tutorials/recipes/recipes/amp_recipe.html#all-together-automatic-mixed-precision
+        use_amp=True
+        scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
+        # model, optimizer = amp.initialize(models=model,
+        #                                   optimizers=optimizer,
+        #                                   opt_level=args.fp16_opt_level)
+        # amp._amp_state.loss_scalers[0]._loss_scale = 2**20
 
     # Distributed training
     if args.local_rank != -1:
@@ -197,25 +201,31 @@ def train(args, model):
         for step, batch in enumerate(epoch_iterator):
             batch = tuple(t.to(args.device) for t in batch)
             x, y = batch
-            loss = model(x, y)
+            # https://pytorch.org/tutorials/recipes/recipes/amp_recipe.html#all-together-automatic-mixed-precision
+            # https://discuss.pytorch.org/t/autocast-not-casting-tensors-to-float16/159308
+            with torch.autocast(device_type=str(args.device), dtype=torch.float16, enabled=use_amp):
+            # with torch.autocast(device_type='cuda', dtype=torch.float16, enabled=use_amp):
+                # output = net(input)
+                # loss = loss_fn(output, target)
+                loss = model(x, y)
+                # https://pytorch.org/docs/stable/notes/amp_examples.html#gradient-accumulation
+                if args.gradient_accumulation_steps > 1:
+                    loss = loss / args.gradient_accumulation_steps
+            scaler.scale(loss).backward()
 
-            if args.gradient_accumulation_steps > 1:
-                loss = loss / args.gradient_accumulation_steps
-            if args.fp16:
-                with amp.scale_loss(loss, optimizer) as scaled_loss:
-                    scaled_loss.backward()
-            else:
-                loss.backward()
+            # Unscales the gradients of optimizer's assigned parameters in-place
+            scaler.unscale_(optimizer)
+
+            # Since the gradients of optimizer's assigned parameters are now unscaled, clips as usual.
+            # You may use the same value for max_norm here as you would without gradient scaling.
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.1)
 
             if (step + 1) % args.gradient_accumulation_steps == 0:
                 losses.update(loss.item()*args.gradient_accumulation_steps)
-                if args.fp16:
-                    torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_grad_norm)
-                else:
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
                 scheduler.step()
-                optimizer.step()
-                optimizer.zero_grad()
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad() # set_to_none=True here can modestly 
                 global_step += 1
 
                 epoch_iterator.set_description(
@@ -233,6 +243,44 @@ def train(args, model):
 
                 if global_step % t_total == 0:
                     break
+
+            # https://pytorch.org/blog/understanding-gpu-memory-1/
+
+            ################################################
+#             if args.gradient_accumulation_steps > 1:
+#                 loss = loss / args.gradient_accumulation_steps
+#             if args.fp16:
+#                 with amp.scale_loss(loss, optimizer) as scaled_loss:
+#                     scaled_loss.backward()
+#             else:
+#                 loss.backward()
+#             if (step + 1) % args.gradient_accumulation_steps == 0:
+#                 losses.update(loss.item()*args.gradient_accumulation_steps)
+#                 if args.fp16:
+#                     torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_grad_norm)
+#                 else:
+#                     torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+#                 scheduler.step()
+#                 optimizer.step()
+#                 optimizer.zero_grad()
+#                 global_step += 1
+# 
+#                 epoch_iterator.set_description(
+#                     "Training (%d / %d Steps) (loss=%2.5f)" % (global_step, t_total, losses.val)
+#                 )
+#                 if args.local_rank in [-1, 0]:
+#                     writer.add_scalar("train/loss", scalar_value=losses.val, global_step=global_step)
+#                     writer.add_scalar("train/lr", scalar_value=scheduler.get_lr()[0], global_step=global_step)
+#                 if global_step % args.eval_every == 0 and args.local_rank in [-1, 0]:
+#                     accuracy = valid(args, model, writer, test_loader, global_step)
+#                     if best_acc < accuracy:
+#                         save_model(args, model)
+#                         best_acc = accuracy
+#                     model.train()
+# 
+#                 if global_step % t_total == 0:
+#                     break
+            ################################################
         losses.reset()
         if global_step % t_total == 0:
             break
@@ -242,6 +290,33 @@ def train(args, model):
     logger.info("Best Accuracy: \t%f" % best_acc)
     logger.info("End Training!")
 
+#### GPU Mem ___
+    
+# https://pytorch.org/blog/understanding-gpu-memory-1/
+
+# Keep a max of 100,000 alloc/free events in the recorded history
+# leading up to the snapshot.
+MAX_NUM_OF_MEM_EVENTS_PER_SNAPSHOT: int = 100000
+
+def start_record_memory_history() -> None:
+   if not torch.cuda.is_available():
+       logger.info("CUDA unavailable. Not recording memory history")
+       return
+
+   logger.info("Starting snapshot record_memory_history")
+   torch.cuda.memory._record_memory_history(
+       max_entries=MAX_NUM_OF_MEM_EVENTS_PER_SNAPSHOT
+   )
+
+def stop_record_memory_history() -> None:
+   if not torch.cuda.is_available():
+       logger.info("CUDA unavailable. Not recording memory history")
+       return
+
+   logger.info("Stopping snapshot record_memory_history")
+   torch.cuda.memory._record_memory_history(enabled=None)
+
+#### ___ GPU Mem
 
 def main():
     parser = argparse.ArgumentParser()
@@ -298,6 +373,11 @@ def main():
                              "0 (default value): dynamic loss scaling.\n"
                              "Positive power of 2: static loss scaling value.\n")
     args = parser.parse_args()
+
+
+    # https://pytorch.org/blog/understanding-gpu-memory-1/
+
+
 
     # Setup CUDA, GPU & distributed training
     if args.local_rank == -1:

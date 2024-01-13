@@ -566,3 +566,6 @@ Traceback (most recent call last):
     model, optimizer = amp.initialize(models=model,
 AttributeError: module 'torch.cuda.amp' has no attribute 'initialize'
 vscode ➜ /workspaces/ViT-pytorch (dev_container) $ 
+
+https://discuss.pytorch.org/t/how-to-replace-apex-amp-by-pytorch-amp/182087
+https://discuss.pytorch.org/t/torch-cuda-amp-equivalent-of-apex-amp-initialize/132598
