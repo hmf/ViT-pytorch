@@ -569,3 +569,20 @@ vscode ➜ /workspaces/ViT-pytorch (dev_container) $
 
 https://discuss.pytorch.org/t/how-to-replace-apex-amp-by-pytorch-amp/182087
 https://discuss.pytorch.org/t/torch-cuda-amp-equivalent-of-apex-amp-initialize/132598
+
+------------------------
+
+ python3 train.py --name cifar10-100_500 --dataset cifar10 --model_type ViT-B_16 --pretrained_dir checkpoint/ViT-B_16.npz --gradient_accumulation_steps 2
+
+Traceback (most recent call last):
+  File "/workspaces/ViT-pytorch/train.py", line 428, in <module>
+    main()
+  File "/workspaces/ViT-pytorch/train.py", line 424, in main
+    train(args, model)
+  File "/workspaces/ViT-pytorch/train.py", line 230, in train
+    scaler.scale(loss).backward()
+UnboundLocalError: local variable 'scaler' referenced before assignment
+Training (X / X Steps) (loss=X.X):   0%|| 0/196 [00:01<?, ?it/s]
+
+
+

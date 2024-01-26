@@ -170,12 +170,13 @@ def train(args, model):
         # https://discuss.pytorch.org/t/torch-cuda-amp-equivalent-of-apex-amp-initialize/132598/5
         # https://pytorch.org/tutorials/recipes/recipes/amp_recipe.html#all-together-automatic-mixed-precision
         use_amp=True
-        scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
         # model, optimizer = amp.initialize(models=model,
         #                                   optimizers=optimizer,
         #                                   opt_level=args.fp16_opt_level)
         # amp._amp_state.loss_scalers[0]._loss_scale = 2**20
-        mem.mem_usage(logger, "AMP scaler created", args.device)
+        # mem.mem_usage(logger, "AMP scaler created", args.device)
+    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
+    mem.mem_usage(logger, "AMP scaler created", args.device)
 
     # Distributed training
     if args.local_rank != -1:

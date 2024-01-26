@@ -61,11 +61,11 @@
 	},
 	// containerWorkspaceFolder points to the git project root
 	// containerWorkspaceFolderBasename fails
-	"mounts": [
-    "source=${localEnv:HOME}/../../mnt/data02/,target=${containerWorkspaceFolder}/../../../mnt/data02/,type=bind,consistency=cached",
-	  "source=${localEnv:HOME}/VSCodeProjects/mvtec_ad,target=${containerWorkspaceFolder}/../mvtec_ad,type=bind,consistency=cached",
-	  "source=${localEnv:HOME}/VSCodeProjects/backup_data,target=${containerWorkspaceFolder}/../backup_data,type=bind,consistency=cached"
-	],
+	// "mounts": [
+  //   "source=${localEnv:HOME}/../../mnt/data02/,target=${containerWorkspaceFolder}/../../../mnt/data02/,type=bind,consistency=cached",
+	//   "source=${localEnv:HOME}/VSCodeProjects/mvtec_ad,target=${containerWorkspaceFolder}/../mvtec_ad,type=bind,consistency=cached",
+	//   "source=${localEnv:HOME}/VSCodeProjects/backup_data,target=${containerWorkspaceFolder}/../backup_data,type=bind,consistency=cached"
+	// ],
   "waitFor": "onCreateCommand",
   // "updateContentCommand": "python3 -m pip install -r requirements.txt",
   // "postCreateCommand": "",
