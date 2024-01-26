@@ -147,21 +147,23 @@ def train(args, model):
 
     args.train_batch_size = args.train_batch_size // args.gradient_accumulation_steps
 
-    mem.mem_usage(logger, "At start")
+    mem.mem_usage(logger, "At start", args.device)
     # Prepare dataset
     train_loader, test_loader = get_loader(args)
-    mem.mem_usage(logger, "Data loaded")
+    mem.mem_usage(logger, "Data loaded", args.device)
 
     # Prepare optimizer and scheduler
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=args.learning_rate,
                                 momentum=0.9,
                                 weight_decay=args.weight_decay)
+    mem.mem_usage(logger, "Optimizer created", args.device)
     t_total = args.num_steps
     if args.decay_type == "cosine":
         scheduler = WarmupCosineSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=t_total)
     else:
         scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=t_total)
+    mem.mem_usage(logger, "Scheduler created", args.device)
 
     use_amp=False
     if args.fp16:
@@ -173,10 +175,12 @@ def train(args, model):
         #                                   optimizers=optimizer,
         #                                   opt_level=args.fp16_opt_level)
         # amp._amp_state.loss_scalers[0]._loss_scale = 2**20
+        mem.mem_usage(logger, "AMP scaler created", args.device)
 
     # Distributed training
     if args.local_rank != -1:
         model = DDP(model, message_size=250000000, gradient_predivide_factor=get_world_size())
+        mem.mem_usage(logger, "Distributed training initialized", args.device)
 
     # Train!
     logger.info("***** Running training *****")
@@ -198,9 +202,21 @@ def train(args, model):
                               bar_format="{l_bar}{r_bar}",
                               dynamic_ncols=True,
                               disable=args.local_rank not in [-1, 0])
-        for step, batch in enumerate(epoch_iterator):
+        mem.mem_usage(logger, "\nepoch_iterator created", args.device)
+        iter_batches = enumerate(epoch_iterator)
+        mem.mem_usage(logger, "enumerate(epoch_iterator)", args.device)
+        # for step, batch in enumerate(epoch_iterator):
+        for step, batch in iter_batches:
+            print(type(batch))
+            mem.mem_usage(logger, "batch iteration", args.device)
             batch = tuple(t.to(args.device) for t in batch)
+            print(type(batch))
             x, y = batch
+            print(type(x))
+            print(type(y))
+            print(x.shape)
+            print(y.shape)
+            mem.mem_usage(logger, "batch to device", args.device)
             # https://pytorch.org/tutorials/recipes/recipes/amp_recipe.html#all-together-automatic-mixed-precision
             # https://discuss.pytorch.org/t/autocast-not-casting-tensors-to-float16/159308
             with torch.autocast(device_type=str(args.device), dtype=torch.float16, enabled=use_amp):

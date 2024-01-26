@@ -12,7 +12,7 @@ def count_parameters(model):
     params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     return params/1000000
 
-def user_friendly(b: int) -> tuple[str, int]:
+def user_friendly_val(b: int) -> tuple[str, int]:
     mem = b
     mem_k = mem / KB
     mem_m = mem / MB
@@ -26,20 +26,21 @@ def user_friendly(b: int) -> tuple[str, int]:
     else:
         return ("b", mem)
 
+def user_friendly(logger: logging.Logger, s: str, b: int) -> None:
+    (u, v) = user_friendly_val(b)
+    logger.info("%s%2.1f%s", s, v, u)
+
 def num_params_of(logger: logging.Logger, model: nn.Module) -> None:
     # https://discuss.pytorch.org/t/gpu-memory-that-model-uses/56822
     mem_params = sum([param.nelement()*param.element_size() for param in model.parameters()])
     mem_bufs = sum([buf.nelement()*buf.element_size() for buf in model.buffers()])
     mem = mem_params + mem_bufs # in bytes
-    (u, v) = user_friendly(mem)
+    (u, v) = user_friendly_val(mem)
     logger.info("Total model size: \t%2.1f%s", v, u)
 
 
-def mem_usage(logger: logging.Logger, s: str) -> None : 
+def mem_usage(logger: logging.Logger, s: str, device: torch.device) -> None : 
     logger.info("%s", s)
-    (u, v) = user_friendly(torch.cuda.memory_allocated(0))
-    logger.info("torch.cuda.memory_allocated:    \t%2.1f%s", v, u)
-    (u, v) = user_friendly(torch.cuda.memory_reserved(0))
-    logger.info("torch.cuda.memory_reserved:     \t%2.1f%s", v, u)
-    (u, v) = user_friendly(torch.cuda.max_memory_reserved(0))
-    logger.info("torch.cuda.max_memory_reserved: \t%2.1f%s", v, u)
+    user_friendly(logger, "torch.cuda.memory_allocated:    \t", torch.cuda.memory_allocated(device))
+    user_friendly(logger, "torch.cuda.memory_reserved:     \t", torch.cuda.memory_reserved(device))
+    user_friendly(logger, "torch.cuda.max_memory_reserved: \t", torch.cuda.max_memory_reserved(device))

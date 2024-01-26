@@ -21,6 +21,7 @@ import models.configs as configs
 
 from .modeling_resnet import ResNetV2
 
+import mem
 
 logger = logging.getLogger(__name__)
 
@@ -254,8 +255,11 @@ class Transformer(nn.Module):
         self.encoder = Encoder(config, vis)
 
     def forward(self, input_ids):
+        mem.mem_usage(logger, "Transformer pre-forward", 0)
         embedding_output = self.embeddings(input_ids)
+        mem.mem_usage(logger, "Transformer pre-encoder", 0)
         encoded, attn_weights = self.encoder(embedding_output)
+        mem.mem_usage(logger, "Transformer post-encoder", 0)
         return encoded, attn_weights
 
 
@@ -266,14 +270,20 @@ class VisionTransformer(nn.Module):
         self.zero_head = zero_head
         self.classifier = config.classifier
 
+        mem.mem_usage(logger, "Pre-VisionTransformer", 0)
         self.transformer = Transformer(config, img_size, vis)
+        mem.mem_usage(logger, "Pre-VisionTransformer", 0)
         self.head = Linear(config.hidden_size, num_classes)
+        mem.mem_usage(logger, "Post-VisionTransformer", 0)
 
     def forward(self, x, labels=None):
+        mem.mem_usage(logger, "VisionTransformer pre-forward", 0)
         x, attn_weights = self.transformer(x)
+        mem.mem_usage(logger, "VisionTransformer pre-head", 0)
         logits = self.head(x[:, 0])
 
         if labels is not None:
+            mem.mem_usage(logger, "VisionTransformer pre-loss", 0)
             loss_fct = CrossEntropyLoss()
             loss = loss_fct(logits.view(-1, self.num_classes), labels.view(-1))
             return loss
@@ -281,6 +291,7 @@ class VisionTransformer(nn.Module):
             return logits, attn_weights
 
     def load_from(self, weights):
+        mem.mem_usage(logger, "VisionTransformer pre-load", 0)
         with torch.no_grad():
             if self.zero_head:
                 nn.init.zeros_(self.head.weight)
@@ -334,6 +345,7 @@ class VisionTransformer(nn.Module):
                 for bname, block in self.transformer.embeddings.hybrid_model.body.named_children():
                     for uname, unit in block.named_children():
                         unit.load_from(weights, n_block=bname, n_unit=uname)
+        mem.mem_usage(logger, "VisionTransformer post-load", 0)
 
 
 CONFIGS = {
